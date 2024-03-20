@@ -1,18 +1,40 @@
-import { useState } from "react"
-import { Button, Form, Modal, Container } from "react-bootstrap"
+import { useState, useEffect } from "react";
+import { Button, Form, Modal, Container } from "react-bootstrap";
+import axios from "axios";
 
 export const Note = () => {
-  const [note, setNote] = useState("")
-  const [password, setPassword] = useState("")
-  const [showModal, setShowModal] = useState(true)
+  const [note, setNote] = useState("");
+  const [password, setPassword] = useState("");
+  const [showModal, setShowModal] = useState(true);
+  const [fetchedNote, setFetchedNote] = useState("");
 
   const createNote = async (event) => {
-    // todo...
-  }
+    event.preventDefault();
+  };
 
   const getNote = async (event) => {
-    // todo...
-  }
+    event.preventDefault();
+    try {
+      const response = await axios.get("http://localhost:3000/note-status/:title", {
+        params: {
+          title: password 
+        }
+      });
+      if (response.data) {
+        const noteResponse = await axios.get("http://localhost:3000/note/:title", {
+          params: {
+            title: password
+          }
+        });
+        setFetchedNote(noteResponse.data.note);
+        setShowModal(false);
+      } else {
+        alert("Note not found!");
+      }
+    } catch (error) {
+      console.error("Error fetching note:", error);
+    }
+  };
 
   return (
     <Container>
@@ -28,7 +50,7 @@ export const Note = () => {
               </Modal.Header>
               <Modal.Body>
                 <p>Great! This site doesn&apos;t exist, it can be yours!</p>
-                <Form.Label htmlFor="password">New password</Form.Label>
+                <Form.Label htmlFor="password">Enter existing password</Form.Label>
                 <Form.Control
                   type="password"
                   value={password}
@@ -41,13 +63,19 @@ export const Note = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => setShowModal(false)}
+                  type="submit"
                 >
-                  Create
+                  Get Note
                 </Button>
               </Modal.Footer>
             </form>
           </Modal>
+          {fetchedNote && (
+            <div className="mt-3">
+              <h2>Fetched Note</h2>
+              <p>{fetchedNote}</p>
+            </div>
+          )}
           <form onSubmit={createNote}>
             <Form.Control
               value={note}
@@ -66,5 +94,4 @@ export const Note = () => {
         </>
       </main>
     </Container>
-  )
-}
+  )};
